@@ -1,0 +1,19 @@
+# Core
+fastapi
+uvicorn
+pydantic
+python-dotenv
+sqlalchemy
+
+# AI & Processing
+opencv-python
+numpy
+rembg
+easyocr
+google-genai
+requests
+
+# Extra for EasyOCR/rembg
+torch
+torchvision
+onnxruntime
