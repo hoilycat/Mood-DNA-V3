@@ -51,6 +51,46 @@ AI 피드백과 연동된 실무 레퍼런스 제안.
 
 ---
 
+## ⚙️ System Architecture
+
+```mermaid
+graph TD
+
+A[User Image Upload] --> B[Frontend UI<br/>React Dashboard]
+B --> C[FastAPI Backend]
+C --> D[Image Analyzer<br/>OpenCV / OCR]
+C --> E[Feature Extraction<br/>Color / Layout / Texture]
+D --> E
+E --> F[Metrics Engine<br/>디자인 수치화]
+F --> G[Target DNA<br/>업종 / 분위기 / 의도]
+F --> H[YIE Client<br/>domain=design]
+G --> H
+H --> I[YIE GraphRAG API<br/>/rag/query]
+I --> J[Neo4j Knowledge Graph<br/>Design Papers]
+I --> K[Vector Retrieval<br/>논문 Chunk 검색]
+J --> L[Evidence Engine<br/>Chunk ID + 출처]
+K --> L
+L --> M[EXAONE / LLM Critique<br/>근거 기반 비평]
+M --> N[Result Output<br/>DNA Score + 논문 근거 + 피드백]
+
+style A fill:#1d4ed8,color:#fff
+style B fill:#2563eb,color:#fff
+style C fill:#2563eb,color:#fff
+style D fill:#3b82f6,color:#fff
+style E fill:#3b82f6,color:#fff
+style F fill:#60a5fa,color:#fff
+style G fill:#60a5fa,color:#fff
+style H fill:#0f766e,color:#fff
+style I fill:#0d9488,color:#fff
+style J fill:#5eead4,color:#134e4a
+style K fill:#99f6e4,color:#134e4a
+style L fill:#ccfbf1,color:#134e4a
+style M fill:#dbeafe,color:#1d4ed8
+style N fill:#eff6ff,color:#1d4ed8
+```
+
+---
+
 ## 🧩 Tech Stack
 
 ### Frontend
