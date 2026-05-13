@@ -1,7 +1,22 @@
 # 🌙 Mood-DNA Ver 3.0
 
+![version](https://img.shields.io/badge/version-3.0-3b82f6?style=flat-square)
+![status](https://img.shields.io/badge/status-developing-2563eb?style=flat-square)
+![mood](https://img.shields.io/badge/mood-design_intelligence-8b5cf6?style=flat-square)
+![coffee](https://img.shields.io/badge/coffee-powered-92400e?style=flat-square)
+![YIE](https://img.shields.io/badge/YIE-integrated-0f766e?style=flat-square)
+
 > **Design Intelligence for Designers**  
 > 감각을 데이터로, 아이디어를 구조로. — **YIE 통합 버전**
+
+![React](https://img.shields.io/badge/React-3b82f6?style=flat-square&logo=react&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-2563eb?style=flat-square&logo=fastapi&logoColor=white)
+![Neo4j](https://img.shields.io/badge/Neo4j-1d4ed8?style=flat-square&logo=neo4j&logoColor=60a5fa)
+![Python](https://img.shields.io/badge/Python-2563eb?style=flat-square&logo=python&logoColor=white)
+![LlamaIndex](https://img.shields.io/badge/LlamaIndex-3b82f6?style=flat-square&logo=chainlink&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google_Gemini-1d4ed8?style=flat-square&logo=google&logoColor=white)
+![OpenCV](https://img.shields.io/badge/OpenCV-2563eb?style=flat-square&logo=opencv&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-EXAONE_3.5-111827?style=flat-square)
 
 ---
 
