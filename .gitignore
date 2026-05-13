@@ -77,3 +77,7 @@ Thumbs.db
 #6 기타 파일
 project_summary.txt
 find_models.py
+.claude/
+.venv/
+node_modules/
+
