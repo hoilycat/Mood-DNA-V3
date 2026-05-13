@@ -3,7 +3,6 @@
 ![version](https://img.shields.io/badge/version-3.0-3b82f6?style=flat-square)
 ![status](https://img.shields.io/badge/status-developing-2563eb?style=flat-square)
 ![mood](https://img.shields.io/badge/mood-design_intelligence-8b5cf6?style=flat-square)
-![coffee](https://img.shields.io/badge/coffee-powered-92400e?style=flat-square)
 ![YIE](https://img.shields.io/badge/YIE-integrated-0f766e?style=flat-square)
 
 > **Design Intelligence for Designers**  
