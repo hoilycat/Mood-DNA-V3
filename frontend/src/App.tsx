@@ -364,7 +364,7 @@ function App() {
   }, [isDark]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setShowSplash(false), 3200);
+    const timer = window.setTimeout(() => setShowSplash(false), 4600);
     return () => window.clearTimeout(timer);
   }, []);
 
