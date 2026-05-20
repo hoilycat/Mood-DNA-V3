@@ -24,6 +24,7 @@ import {
 import {
   PolarAngleAxis,
   PolarGrid,
+  PolarRadiusAxis,
   Radar as RechartsRadar,
   RadarChart,
   ResponsiveContainer,
@@ -249,6 +250,7 @@ const DnaRadarChart = ({
   targetData?: DnaProfile;
   height?: number;
 }) => {
+  const showScale = height >= 240;
   const chartData = Object.entries(DNA_LABELS)
     .filter(([key]) => typeof data[key] === 'number' || typeof targetData?.[key] === 'number')
     .map(([key, meta]) => ({
@@ -262,6 +264,16 @@ const DnaRadarChart = ({
     <ResponsiveContainer width="100%" height={height}>
       <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="72%">
         <PolarGrid stroke="var(--color-border)" />
+        {showScale && (
+          <PolarRadiusAxis
+            angle={90}
+            domain={[0, 100]}
+            ticks={[20, 40, 60, 80, 100]}
+            tick={{ fontSize: 10, fontWeight: 800, fill: 'var(--color-label)' }}
+            axisLine={false}
+            tickLine={false}
+          />
+        )}
         <PolarAngleAxis
           dataKey="subject"
           tick={{ fontSize: 12, fontWeight: 700, fill: 'var(--color-muted)' }}
