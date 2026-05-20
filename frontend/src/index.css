@@ -122,6 +122,234 @@
   border-color: var(--primary);
 }
 
+.mood-splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.35rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(74, 191, 191, 0.16), transparent 31%),
+    radial-gradient(circle at 50% 62%, rgba(36, 119, 212, 0.12), transparent 34%),
+    linear-gradient(180deg, #07192e 0%, #08172a 54%, #050d19 100%);
+  color: #0d2540;
+  font-family: "Courier New", monospace;
+}
+
+.mood-splash-screen::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(120deg, transparent 12%, rgba(124, 226, 220, 0.08) 48%, transparent 72%),
+    radial-gradient(circle at 50% 46%, rgba(232, 240, 248, 0.08), transparent 20%);
+  opacity: 0;
+  animation: moodSplashGlow 2.6s ease forwards 0.35s;
+}
+
+.mood-splash-icon {
+  position: relative;
+  z-index: 1;
+  width: 200px;
+  height: 202px;
+  filter: drop-shadow(0 20px 48px rgba(0, 0, 0, 0.28));
+}
+
+.mood-splash-icon svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 202px;
+}
+
+#mood-phase1 {
+  opacity: 0;
+  animation: moodFadeIn 0.5s ease forwards 0.2s;
+}
+
+#mood-fish-eye {
+  opacity: 0;
+  animation: moodPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards 0.65s;
+}
+
+#mood-phase1-out,
+#mood-fish-eye-out {
+  opacity: 0;
+  animation: moodSquishOut 0.4s cubic-bezier(0.4, 0, 1, 0.6) forwards 1.2s;
+}
+
+#mood-phase2 {
+  opacity: 0;
+  transform-origin: 50% 50%;
+  animation:
+    moodSquishIn 0.7s cubic-bezier(0.34, 1.8, 0.64, 1) forwards 1.55s,
+    moodSpinLoop 8s cubic-bezier(0.4, 0, 0.6, 1) 2.25s infinite;
+}
+
+.mood-splash-brand {
+  z-index: 1;
+  color: #e8d5b0;
+  font-size: 28px;
+  font-weight: 700;
+  opacity: 0;
+  animation: moodSlideUp 0.5s ease forwards 2s;
+}
+
+.mood-splash-brand span {
+  color: #2abfaa;
+  font-size: 34px;
+  font-weight: 400;
+}
+
+.mood-splash-tagline {
+  z-index: 1;
+  color: #9ab1c7;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: moodSlideUp 0.4s ease forwards 2.2s;
+}
+
+.mood-splash-bar {
+  z-index: 1;
+  width: 140px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(154, 177, 199, 0.24);
+  opacity: 0;
+  animation: moodSlideUp 0.4s ease forwards 2.3s;
+}
+
+.mood-splash-bar-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: #2abfaa;
+  animation: moodLoadBar 1.2s ease forwards 2.4s;
+}
+
+@keyframes moodFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes moodSquishOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes moodSquishIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes moodPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes moodSpinLoop {
+  0% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(100deg);
+  }
+  70% {
+    transform: rotate(260deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes moodSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes moodLoadBar {
+  0% {
+    width: 0;
+  }
+  60% {
+    width: 75%;
+  }
+  85% {
+    width: 90%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes moodSplashGlow {
+  0% {
+    opacity: 0;
+    transform: translateX(-8%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #mood-phase1,
+  #mood-fish-eye,
+  #mood-phase1-out,
+  #mood-fish-eye-out,
+  #mood-phase2,
+  .mood-splash-brand,
+  .mood-splash-tagline,
+  .mood-splash-bar,
+  .mood-splash-bar-fill,
+  .mood-splash-screen::before {
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
+  }
+}
+
 .segmented {
   display: flex;
   gap: 3px;

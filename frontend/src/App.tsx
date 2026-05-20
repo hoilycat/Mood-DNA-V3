@@ -28,6 +28,7 @@ import {
   RadarChart,
   ResponsiveContainer,
 } from 'recharts';
+import MoodSplashScreen from './components/MoodSplashScreen';
 
 interface MoodDnaResult {
   brightness: number;
@@ -314,6 +315,7 @@ const StatCard = ({ label, value, max = 100, icon: Icon }: { label: string; valu
 );
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [context, setContext] = useState({
     industry: 'IT / 테크 스타트업',
     mainMood: 'Rational_Stable' as keyof typeof MOOD_DATABASE,
@@ -348,6 +350,11 @@ function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
   }, [isDark]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowSplash(false), 3200);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const detectedTags = extractKeywords(context.description);
@@ -464,6 +471,10 @@ function App() {
   };
 
   const canAnalyze = isBatchMode ? Boolean(batchFiles?.length) : isCompareMode ? Boolean(file && file2) : Boolean(file);
+
+  if (showSplash) {
+    return <MoodSplashScreen />;
+  }
 
   return (
     <div className="flex h-screen min-h-[680px] flex-col overflow-hidden bg-background text-foreground">
