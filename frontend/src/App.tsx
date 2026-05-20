@@ -24,10 +24,12 @@ import {
 import {
   PolarAngleAxis,
   PolarGrid,
+  PolarRadiusAxis,
   Radar as RechartsRadar,
   RadarChart,
   ResponsiveContainer,
 } from 'recharts';
+import MoodSplashScreen from './components/MoodSplashScreen';
 
 interface MoodDnaResult {
   brightness: number;
@@ -248,6 +250,7 @@ const DnaRadarChart = ({
   targetData?: DnaProfile;
   height?: number;
 }) => {
+  const showScale = height >= 240;
   const chartData = Object.entries(DNA_LABELS)
     .filter(([key]) => typeof data[key] === 'number' || typeof targetData?.[key] === 'number')
     .map(([key, meta]) => ({
@@ -261,6 +264,16 @@ const DnaRadarChart = ({
     <ResponsiveContainer width="100%" height={height}>
       <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="72%">
         <PolarGrid stroke="var(--color-border)" />
+        {showScale && (
+          <PolarRadiusAxis
+            angle={90}
+            domain={[0, 100]}
+            ticks={[20, 40, 60, 80, 100]}
+            tick={{ fontSize: 10, fontWeight: 800, fill: 'var(--color-label)' }}
+            axisLine={false}
+            tickLine={false}
+          />
+        )}
         <PolarAngleAxis
           dataKey="subject"
           tick={{ fontSize: 12, fontWeight: 700, fill: 'var(--color-muted)' }}
@@ -314,6 +327,7 @@ const StatCard = ({ label, value, max = 100, icon: Icon }: { label: string; valu
 );
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [context, setContext] = useState({
     industry: 'IT / 테크 스타트업',
     mainMood: 'Rational_Stable' as keyof typeof MOOD_DATABASE,
@@ -348,6 +362,11 @@ function App() {
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
   }, [isDark]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowSplash(false), 4600);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const detectedTags = extractKeywords(context.description);
@@ -464,6 +483,10 @@ function App() {
   };
 
   const canAnalyze = isBatchMode ? Boolean(batchFiles?.length) : isCompareMode ? Boolean(file && file2) : Boolean(file);
+
+  if (showSplash) {
+    return <MoodSplashScreen />;
+  }
 
   return (
     <div className="flex h-screen min-h-[680px] flex-col overflow-hidden bg-background text-foreground">
