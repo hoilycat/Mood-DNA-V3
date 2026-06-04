@@ -19,8 +19,9 @@
 
 ---
 
-> ⚠️ **v3는 개발 진행 중입니다.**  
-> 안정 버전은 [Mood-DNA v2](https://github.com/hoilycat/mood-dna-v2)를 참고하세요.
+> ✅ **v3 YIE 연동 구현 완료**
+>
+> 분석 결과에서 디자인 학술 논문 기반 비평을 확인할 수 있습니다.
 
 ---
 
@@ -145,8 +146,8 @@ Mood-DNA-V3/
 - [x] 이미지 수치 분석 엔진 구축 (OpenCV)
 - [x] 실시간 디자인 DNA 시각화 (Radar Chart)
 - [x] YIE GraphRAG 엔진 구축 (Neo4j, 1,374 chunks)
-- [ ] Mood-DNA → YIE `/rag/query` HTTP 연동 👈 Current
-- [ ] 분석 결과 화면에 논문 근거 카드 표시
+- [x] Mood-DNA → YIE `/rag/query` HTTP 연동
+- [x] 분석 결과 화면에 논문 근거 카드 표시
 - [ ] UI 리디자인 (v3 전용)
 - [ ] Target Insight 기반 업종별 특화 조언 모듈 고도화
 - [ ] 디자인 히스토리 스마트 아카이빙 기능
