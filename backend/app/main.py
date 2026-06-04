@@ -21,6 +21,7 @@ from app.services.analyzer import (
     calculate_smoothness
 )
 from app.services.ai_consultant import consult_design, compare_designs
+from app.services.yie_client import query_yie
 from .database import engine, Base, get_db
 from .models import DesignHistory
 from sqlalchemy.orm import Session
@@ -106,6 +107,8 @@ async def analyze_image(
         saliency, symmetry, space, colors, contrast_score, composition_score, aspect_ratio_score, color_count_score,
         typo_score, harmony_score,saturation_score,roundness, straightness, smoothness,target_dict, context_dict, ocr_result["text_content"]
     )
+    question = f"{ai_feedback.get('mood', '')} 디자인. 키워드: {', '.join(ai_feedback.get('design_keywords', []))}"
+    yie_critique = await query_yie("design", "critique", question)
     
     # 5. 구글 검색을 통해 레퍼런스 이미지 가져오기
     # AI가 준 키워드 리스트를 사용하여 검색 (JSON 키값은 ai_consultant.py와 맞춤)
@@ -145,7 +148,8 @@ async def analyze_image(
         "harmony_score" : harmony_score,
         "roundness": roundness, 
         "straightness": straightness, 
-        "smoothness": smoothness
+        "smoothness": smoothness,
+        "yie_critique": yie_critique
     }
     
 @app.post("/compare")
