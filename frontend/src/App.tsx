@@ -67,6 +67,12 @@ interface MoodDnaResult {
     estimated_days: number;
     estimated_value: number;
   };
+  yie_critique?: {
+    answer: string;
+    sections: {
+      recommendation: string | null;
+    };
+  } | null;
 }
 
 type DnaProfile = Record<string, number>;
@@ -896,6 +902,13 @@ const RightPanel = ({ result, compResult, onSelectImage }: { result: MoodDnaResu
         <h3>Suggestion</h3>
         <p>{result?.advice}</p>
       </section>
+      {result?.yie_critique && (
+        <section className="critique-card">
+          <h3>📚 논문 기반 비평</h3>
+          <p>{result.yie_critique.sections.recommendation ?? result.yie_critique.answer}</p>
+          <small className="mt-3 block text-xs text-muted-custom">YIE GraphRAG · 디자인 학술 논문 기반</small>
+        </section>
+      )}
       <section className="critique-card">
         <h3>Checklist</h3>
         <div className="space-y-2">
