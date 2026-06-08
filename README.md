@@ -138,6 +138,31 @@ Mood-DNA-V3/
 │       └── models.py     # 디자인 히스토리 DB 스키마
 └── README.md
 ```
+---
+
+
+## 🧬 Version History
+ 
+> 이미지 색상 추출 스크립트 한 장에서, 논문 기반 AI 디자인 비평 시스템으로.
+ 
+```mermaid
+flowchart LR
+    classDef v1 fill:#EDE0CC,stroke:#C4A882,color:#3D2B1A
+    classDef v2 fill:#C5D8E3,stroke:#7AABBD,color:#1A3D50
+    classDef v3 fill:#6B3FA0,stroke:#4A2478,color:#F0E8FF
+ 
+    V1["🌱 v1 · Python + Streamlit<br>────────────────<br>분석 지표 4종<br>OpenCV · K-Means<br>룰 기반 AI (if-else)<br>Unsplash 레퍼런스"]:::v1
+    V2["⚙️ v2 · FastAPI + React<br>────────────────<br>분석 지표 15종+<br>EasyOCR · rembg<br>Gemini LLM + 폴백체인<br>SerpApi · SQLite<br>배치 오디션"]:::v2
+    V3["🧠 v3 · FastAPI + React + YIE<br>────────────────<br>YIE GraphRAG 실 연동<br>1,043개 디자인 논문 청크<br>논문 근거 비평 카드"]:::v3
+ 
+    V1 -->|"분석 엔진 계승 ✅"| V2
+    V2 -->|"v2 클론 기반 ✅"| V3
+```
+ 
+> 전체 변천사 → [`Mood-DNA_변천사.md`](./docs/Mood-DNA_변천사.md)
+
+
+
 
 ---
 
