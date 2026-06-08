@@ -147,9 +147,9 @@ Mood-DNA-V3/
  
 ```mermaid
 flowchart LR
-    classDef v1 fill:#EDE0CC,stroke:#C4A882,color:#3D2B1A
-    classDef v2 fill:#C5D8E3,stroke:#7AABBD,color:#1A3D50
-    classDef v3 fill:#6B3FA0,stroke:#4A2478,color:#F0E8FF
+    classDef v1 fill:#C8DFF0,stroke:#7AABCC,color:#1A3D50
+    classDef v2 fill:#4169C8,stroke:#2A4EA8,color:#FFFFFF
+    classDef v3 fill:#1A6B6B,stroke:#0D4A4A,color:#E0F5F5
  
     V1["🌱 v1 · Python + Streamlit<br>────────────────<br>분석 지표 4종<br>OpenCV · K-Means<br>룰 기반 AI (if-else)<br>Unsplash 레퍼런스"]:::v1
     V2["⚙️ v2 · FastAPI + React<br>────────────────<br>분석 지표 15종+<br>EasyOCR · rembg<br>Gemini LLM + 폴백체인<br>SerpApi · SQLite<br>배치 오디션"]:::v2
