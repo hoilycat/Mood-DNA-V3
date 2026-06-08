@@ -161,7 +161,7 @@ flowchart LR
  
 > 전체 변천사 → [`Mood-DNA_변천사.md`](./docs/Mood-DNA_변천사.md)
 > 
-> 📦 [v1 · cof-fee](https://github.com/hoilycat/cof-fee) · [v2 · cof-fee-v2](https://github.com/hoilycat/cof-fee-v2) · v3 · 현재
+> > 📦 [v1 · Mood-DNA](https://github.com/hoilycat/Mood-DNA) · [v2 · Mood-DNA-V2](https://github.com/hoilycat/Mood-DNA-V2) · v3 · 현재
 
 
 ---
