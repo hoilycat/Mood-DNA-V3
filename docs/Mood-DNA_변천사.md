@@ -114,7 +114,7 @@ v2에서 분석 엔진(`analyzer.py`)이 폭발적으로 성장했습니다. 지
  
 ### EasyOCR + 그래픽 분리 로직
  
-v2의 가장 독창적인 구현. 이미지 내 텍스트를 **EasyOCR로 감지하고**, 감지된 텍스트 영역을 흰색으로 덮어버린 '순수 그래픽 이미지'를 별도로 생성해 복잡도를 계산합니다. 텍스트 윤곽선 때문에 복잡도가 100이 튀어나오는 문제를 해결한 것.
+v2의 가장 독창적인 구현. 이미지 내 텍스트를 **EasyOCR로 감지하고**, 감지된 텍스트 영역을 흰색으로 덮어버린 '순수 그래픽 이미지'를 별도로 생성해 복잡도를 계산합니다. 텍스트 윤곽선 때문에 복잡도가 100이 튀어나오는 문제를 해결했습니다.
  
 ### 실제 AI 엔진 (Gemini + 폴백 체인)
  
@@ -134,11 +134,11 @@ v2에서 `rembg` 라이브러리를 도입해 분석 전 자동으로 배경을 
  
 ### 디자인 히스토리 DB
  
-SQLite + SQLAlchemy로 분석 기록을 저장합니다. `DesignHistory` 테이블에 밝기·복잡도·대칭·여백·색상·AI 피드백이 쌓인다. v1에는 없던 아카이빙 개념.
+SQLite + SQLAlchemy로 분석 기록을 저장합니다. `DesignHistory` 테이블에 밝기·복잡도·대칭·여백·색상·AI 피드백이 쌓입니다. v1에는 없던 아카이빙 개념입니다.
  
 ### 배치 오디션 (`/analyze-batch`)
  
-여러 시안을 한 번에 업로드하면 Target DNA와의 유사도를 계산해 순위를 매기고, AI가 오디션 심사위원처럼 마스터 리포트를 작성합니다. v1의 A/B 2개 비교에서 N개 배치 비교로 도약.
+여러 시안을 한 번에 업로드하면 Target DNA와의 유사도를 계산해 순위를 매기고, AI가 오디션 심사위원처럼 마스터 리포트를 작성합니다. v1의 A/B 2개 비교에서 N개 배치 비교로 도약했습니다.
  
 ### Step-by-step 위저드
  
@@ -162,11 +162,11 @@ README의 Roadmap에 **LlamaIndex 기반 Hybrid GraphRAG** 시스템 통합이 `
  
 ## v3 — 논문이 말하다 (YIE GraphRAG 연동)
  
-> **"추측이 아닌 근거"** — 계획으로만 있던 GraphRAG가 실제 코드 3줄로 실현
+> **"추측이 아닌 근거"** — 계획으로만 있던 GraphRAG가 실제 코드 3줄로 실현되었습니다.
  
 ### v3의 시작
  
-v2 레포를 그대로 클론해서 출발했습니다 (첫 커밋: `"chore: init mood-dna-v3 (cloned from v2, YIE integration branch)"`). v2의 모든 기능을 이어받고 YIE 연동에만 집중.
+v2 레포를 그대로 클론해서 출발했습니다 (첫 커밋: `"chore: init mood-dna-v3 (cloned from v2, YIE integration branch)"`). v2의 모든 기능을 이어받고 YIE 연동에만 집중했습니다.
  
 ### 핵심 변화: yie_client.py 추가 + main.py 3줄
  
@@ -226,7 +226,7 @@ API가 없으면 카드가 안 뜨는 방식 — 연결 실패 시에도 앱이 
  
 ### 사라진 것들
  
-v2에 있던 `assets/` 폴더 (데모 webp, 스크린샷 3장)가 v3에서 제거됐습니다. v2에 있던 `code_gather.py`도 "Remove code gathering script" 커밋으로 삭제. 방향이 '데모 자료 관리'보다 'AI 연동 완성'으로 이동.
+v2에 있던 `assets/` 폴더 (데모 webp, 스크린샷 3장)가 v3에서 제거됐습니다. v2에 있던 `code_gather.py`도 "Remove code gathering script" 커밋으로 삭제. 방향이 '데모 자료 관리'보다 'AI 연동 완성'으로 이동합니다.
  
 ### requirements.txt의 변화
  
