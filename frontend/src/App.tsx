@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
+import MoodDNASplash from './MoodDNASplash';
 import axios from 'axios';
 import {
   Activity,
@@ -320,6 +321,7 @@ const StatCard = ({ label, value, max = 100, icon: Icon }: { label: string; valu
 );
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [context, setContext] = useState({
     industry: 'IT / 테크 스타트업',
     mainMood: 'Rational_Stable' as keyof typeof MOOD_DATABASE,
@@ -470,6 +472,8 @@ function App() {
   };
 
   const canAnalyze = isBatchMode ? Boolean(batchFiles?.length) : isCompareMode ? Boolean(file && file2) : Boolean(file);
+
+  if (showSplash) return <MoodDNASplash onComplete={() => setShowSplash(false)} />;
 
   return (
     <div className="flex h-screen min-h-[680px] flex-col overflow-hidden bg-background text-foreground">
