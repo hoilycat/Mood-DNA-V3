@@ -10,6 +10,8 @@ import json
 import cv2
 import numpy as np
 
+from app.services.yie_client import query_yie_sync
+
 
 # 1. 환경 설정 및 API 키 로드
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -351,9 +353,9 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
                 12.판별 분야 및 긍정적 총평: 디자인의 첫인상과 잘된 점을 먼저 언급.
                 
                 선택 사항 중 가장 핵심적인 1~3가지를 선택하여, 비평에 포함시키세요.
-                
 
-                
+
+
                 [4단계: 시각적 요소 해석 및 환각(Hallucination) 방지 원칙]
                 1. 스타일적 허용(Stylistic Intent) 존중:
                    - 캐릭터나 아이콘 디자인에서 점(●)이나 선(⌣, ^)으로 표현된 이목구비는 '감은 눈'이나 '노이즈'가 아니라, 해당 화풍의 의도된 '표정'으로 우선 해석하세요.
@@ -413,6 +415,46 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
                     }}
                 action_checklist는 실무자가 즉시 수정할 수 있는 구체적인 가이드를 15자 내외의 짧은 문장 3개로 작성하세요.
                 """
+
+    # --- 0단계: YIE GraphRAG 논문 근거 수집 ---
+    try:
+        yie_question = (
+            f"업종 '{brand_context['industry']}', 목표 무드 '{brand_context['mainMood']} - {brand_context['subMood']}' 디자인에 대해 "
+            f"밝기 {brightness:.0f}, 복잡도 {complexity:.0f}, 대비 {contrast:.0f}, 여백 {space:.0f}, 색상 조화도 {harmony_score:.0f} 수치를 가진 "
+            f"디자인의 강점과 개선 방향을 디자인 학술 논문 기반으로 비평해줘."
+        )
+        yie_result = query_yie_sync(
+            question=yie_question,
+            task="디자인 비평",
+            context={
+                "industry": brand_context.get("industry"),
+                "mainMood": brand_context.get("mainMood"),
+                "brightness": brightness,
+                "complexity": complexity,
+                "contrast": contrast,
+                "harmony": harmony_score,
+                "space": space,
+            },
+        )
+        if yie_result and yie_result.get("answer"):
+            evidence_list = yie_result.get("evidence", [])
+            evidence_text = "\n".join(
+                f"- [{e.get('chunk_id', '')}] {e.get('document', '')} (관련도: {e.get('score', 0)}점)"
+                for e in evidence_list[:5]
+            )
+            yie_section = f"""
+[🎓 YIE GraphRAG — 디자인 학술 논문 근거]
+{yie_result['answer']}
+
+[참고 논문 청크]
+{evidence_text}
+"""
+            prompt += f"\n\n{yie_section}\n위 학술 논문 근거를 'advice' 항목에 자연스럽게 녹여서 비평에 깊이를 더하세요."
+            print(f"[YIE] 논문 근거 주입 완료 ({len(evidence_list)}개 청크)")
+        else:
+            print("[YIE] 응답 없음, 스킵")
+    except Exception as yie_err:
+        print(f"[YIE] 오류: {yie_err}")
 
   # --- 1단계: 제미나이(Gemini) 릴레이 시도 ---
     # 제미나이는 직접 이미지를 볼 수 있으므로 가장 먼저, 독립적으로 실행.
