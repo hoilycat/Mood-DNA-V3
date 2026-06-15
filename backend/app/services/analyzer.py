@@ -284,22 +284,6 @@ def calculate_effective_color_count(image_bytes, threshold=0.01):
     total = len(pixels)
     return len([c for c in counts if c / total > threshold])
 
-def calculate_typography_ratio(image_bytes):
-    img, _ = get_image_and_mode(image_bytes)
-    if img is None: return 0.0
-    gray = cv2.cvtColor(img[:,:,:3], cv2.COLOR_BGR2GRAY)
-    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (15, 3))
-    dilated = cv2.dilate(thresh, kernel, iterations=1)
-    contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    text_area = 0
-    for cnt in contours:
-        _, _, w, h = cv2.boundingRect(cnt)
-        if 1.5 < (w/h) < 20: text_area += cv2.contourArea(cnt)
-    return min(float((text_area / (img.shape[0] * img.shape[1])) * 500), 100.0)
-
-
 def calculate_color_harmony_score(image_bytes):
     img, _ = get_image_and_mode(image_bytes)
     if img is None: return 0.0

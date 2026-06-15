@@ -21,7 +21,6 @@ from app.services.analyzer import (
     calculate_composition,
     calculate_aspect_ratio,
     calculate_effective_color_count,
-    calculate_typography_ratio,
     calculate_saturation_ratio,
     calculate_color_harmony_score,
     calculate_roundness,
@@ -63,6 +62,10 @@ def parse_json_form(raw: str, field: str) -> dict:
     except (json.JSONDecodeError, TypeError):
         raise HTTPException(status_code=400, detail=f"'{field}' 필드가 올바른 JSON 형식이 아닙니다.")
 
+# 배치 분석 시 동시에 처리할 최대 이미지 수 (ML 모델 안정성·메모리 보호)
+BATCH_CONCURRENCY = 3
+
+
 def compute_metrics(image_bytes: bytes, remove_bg: bool):
     """배경 제거 + OCR + 16개 시각 지표 계산. (빠른 단계 — AI 호출 없음)"""
     analyze_bytes = image_bytes
@@ -94,7 +97,9 @@ def compute_metrics(image_bytes: bytes, remove_bg: bool):
         "composition": calculate_composition(analyze_bytes),
         "aspect_ratio": calculate_aspect_ratio(analyze_bytes),
         "color_count": calculate_effective_color_count(analyze_bytes),
-        "typo_score": calculate_typography_ratio(analyze_bytes),
+        # 실제 OCR로 검출한 텍스트 면적 기반 (도형을 글자로 오인하던 형태 휴리스틱 대체).
+        # text_area_ratio(0~100%)에 5를 곱해 ~20% 텍스트면 만점이 되도록 0~100으로 매핑.
+        "typo_score": min(ocr_result["text_area_ratio"] * 5, 100.0),
         "saturation_score": calculate_saturation_ratio(analyze_bytes),
         "harmony_score": calculate_color_harmony_score(analyze_bytes),
         "roundness": calculate_roundness(analyze_bytes),
@@ -164,25 +169,30 @@ async def run_critique(image_bytes: bytes, metrics: dict, ocr_text: str,
     reference_images = await get_reference_images(keywords, category)
 
     # 4. DB에 기록 저장
-    try:
-        new_record = DesignHistory(
-            industry=context_dict.get("industry", ""),
-            category=category,
-            total_score=ai_feedback.get("total_score"),
-            brightness=metrics["brightness"],
-            complexity=metrics["complexity"],
-            saliency=metrics["saliency"],
-            symmetry=metrics["symmetry"],
-            space=metrics["space"],
-            colors=",".join(metrics["colors"]),
-            metrics=json.dumps(metrics, ensure_ascii=False),
-            description=json.dumps(ai_feedback, ensure_ascii=False), # 한글 깨짐 방지
-        )
-        db.add(new_record)
-        db.commit()
-    except Exception as db_err:
-        db.rollback()
-        print(f"[DB] 히스토리 저장 실패: {db_err}")
+    #    모든 AI 엔진이 실패하면 consult_design이 category="분석 불가" 센티넬을 반환한다.
+    #    이런 실패 결과를 히스토리에 남기면 쓰레기 기록이 쌓이므로 저장을 건너뛴다.
+    if category == "분석 불가":
+        print("[DB] AI 분석 실패 → 히스토리 저장 건너뜀")
+    else:
+        try:
+            new_record = DesignHistory(
+                industry=context_dict.get("industry", ""),
+                category=category,
+                total_score=ai_feedback.get("total_score"),
+                brightness=metrics["brightness"],
+                complexity=metrics["complexity"],
+                saliency=metrics["saliency"],
+                symmetry=metrics["symmetry"],
+                space=metrics["space"],
+                colors=",".join(metrics["colors"]),
+                metrics=json.dumps(metrics, ensure_ascii=False),
+                description=json.dumps(ai_feedback, ensure_ascii=False), # 한글 깨짐 방지
+            )
+            db.add(new_record)
+            db.commit()
+        except Exception as db_err:
+            db.rollback()
+            print(f"[DB] 히스토리 저장 실패: {db_err}")
 
     return {
         **ai_feedback,
@@ -328,27 +338,28 @@ async def analyze_batch(
     target_dict = parse_json_form(target_dna, "target_dna")
     context_dict = parse_json_form(brand_context, "brand_context")
 
-    batch_results = []
+    # 1. 파일을 먼저 전부 읽어둔다 (UploadFile 읽기는 순차로 처리해야 안전)
+    payloads = [(file.filename, await file.read()) for file in files]
 
-    for file in files:
-        # 1. 파일 읽기
-        image_bytes = await file.read()
+    # 2. 동시 분석 — Semaphore로 동시 실행 수를 제한해 병렬화한다.
+    #    ML 모델(easyocr/rembg) 안정성과 메모리 급증을 막기 위해 한 번에 최대 3개만 처리.
+    sem = asyncio.Semaphore(BATCH_CONCURRENCY)
 
-        # 2. 분석 — 단일 분석과 동일한 파이프라인으로 9개 지표 전부 산출
-        #    동기 블로킹 → 스레드풀에서 실행 (파일 간 순차 처리로 메모리 급증 방지)
-        metrics, _ = await run_in_threadpool(compute_metrics, image_bytes, remove_bg)
-
-        # 3. 점수 계산 — 9개 지표 가중 거리 기반 DNA 일치도
-        score = dna_match_score(target_dict, metrics)
-
-        batch_results.append({
-            "filename": file.filename,
-            "score": score,
+    async def analyze_one(filename: str, image_bytes: bytes) -> dict:
+        async with sem:
+            # 동기 블로킹 파이프라인은 스레드풀에서 실행해 이벤트 루프를 막지 않는다.
+            metrics, _ = await run_in_threadpool(compute_metrics, image_bytes, remove_bg)
+        return {
+            "filename": filename,
+            # 9개 지표 가중 거리 기반 DNA 일치도
+            "score": dna_match_score(target_dict, metrics),
             # consult_batch_audition 이 res['dna'] 에서 수치를 읽으므로 'dna' 키로 전달
             "dna": metrics,
-        })
+        }
 
-    # 4. 점수순 정렬
+    batch_results = await asyncio.gather(*(analyze_one(fn, b) for fn, b in payloads))
+
+    # 3. 점수순 정렬
     sorted_results = sorted(batch_results, key=lambda x: x['score'], reverse=True)
 
     # 5. AI에게 전체 리포트 요청 (오디션 심사평 — 동기 블로킹 → 스레드풀)
