@@ -25,6 +25,14 @@
 
 ---
 
+## 🎬 Demo
+
+- 시연 영상: [`Mood-DNA-V3-demo-full.mp4`](./Mood-DNA-V3-demo-full.mp4)
+- 데모 화면: [`demo/full-demo.html`](./demo/full-demo.html)
+- 스플래시 프레임 캡처용 화면: [`demo/splash-frame.html`](./demo/splash-frame.html)
+
+---
+
 ## 🖋️ Introduction
 
 Mood-DNA는 디자이너를 위한 **AI 디자인 파트너**입니다. 단순한 이미지 분석을 넘어, 시각적 지표(Metrics)와 디자인 이론(Knowledge Graph)을 결합하여 디자인 의사결정을 빠르고 정교하게 만들어주는 하이브리드 지능형 도구입니다.
@@ -136,6 +144,7 @@ Mood-DNA-V3/
 │   └── app/
 │       ├── services/     # 핵심 로직 (Analyzer, YIE 연동 클라이언트)
 │       └── models.py     # 디자인 히스토리 DB 스키마
+├── demo/                 # GitHub README 및 시연 영상 제작용 데모 화면
 └── README.md
 ```
 ---
