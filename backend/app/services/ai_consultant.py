@@ -10,7 +10,15 @@ import json
 import cv2
 import numpy as np
 
-from app.services.yie_client import query_yie_sync
+
+# 모든 AI 비평(단일/비교/배치)에 공통 적용되는 브랜드 보이스
+BRAND_VOICE = """
+[브랜드 보이스: Sharp & Supportive — 모든 비평에 반드시 적용]
+- 데이터에 기반해 예리하게 진단하되, 사용자의 시도와 의도를 존중하는 멘토의 어조(~합니다)를 유지하세요.
+- 비난 대신 '성장을 위한 조정값'으로 표현하고, 잘된 점은 구체적 수치를 들어 칭찬하세요.
+- 맹목적 칭찬은 금지합니다. 근거 없는 위로 대신 데이터의 논리로 설득하세요.
+- 반드시 100% 한국어로만 작성하고, 다른 외국어가 섞이지 않게 하세요.
+"""
 
 
 # 1. 환경 설정 및 API 키 로드
@@ -66,14 +74,16 @@ def consult_batch_audition(results, target_dna, brand_context, winner_image_byte
 
     # 2. 모든 AI가 공통으로 사용할 '기본 프롬프트' (변수명을 base_prompt로 통일)
     base_prompt = f"""
+    {BRAND_VOICE}
+
     [역할: 세계적인 디자인 비평가이자 브랜딩 전략가]
     당신은 단순히 점수를 매기는 기계가 아니라, 디자인에 담긴 '의도'를 읽어내고 사용자를 설득하는 마스터입니다.
-    디자인이 브랜드의 가치({brand_context['description']})를 어떻게 시각적으로 구현했는지 전문적인 '서사'를 담아 비평하세요.
+    디자인이 브랜드의 가치({brand_context.get('description', '')})를 어떻게 시각적으로 구현했는지 전문적인 '서사'를 담아 비평하세요.
     
     [사용자 브랜드 정보]
-    - 업종: {brand_context['industry']}
-    - 목표 무드: {brand_context['mainMood']} (메인) / {brand_context['subMood']} (서브)
-    - 브랜드 핵심 가치 및 설명: {brand_context['description']}
+    - 업종: {brand_context.get('industry', '')}
+    - 목표 무드: {brand_context.get('mainMood', '')} (메인) / {brand_context.get('subMood', '')} (서브)
+    - 브랜드 핵심 가치 및 설명: {brand_context.get('description', '')}
     - 사용자가 추구하는 디자인 DNA (Target): {target_dna}
 
     [제출된 시안 분석 데이터]
@@ -82,7 +92,7 @@ def consult_batch_audition(results, target_dna, brand_context, winner_image_byte
     [심사 및 비평 지침 - 필독]
     1. 1위 시안(Winner) 집중 분석 (최소 5문장 이상):
        - "수치가 목표와 가깝다"는 식의 기계적 나열은 금지합니다.
-       - 예: "복잡도가 {target_dna.get('complexity', 50)}점에 근접한 것은, 브랜드 설명에서 언급하신 '{brand_context['description'][:15]}...'의 정체성을 담아내기 위해 의도적으로 디테일을 조절했음을 보여줍니다."
+       - 예: "복잡도가 {target_dna.get('complexity', 50)}점에 근접한 것은, 브랜드 설명에서 언급하신 '{brand_context.get('description', '')[:15]}...'의 정체성을 담아내기 위해 의도적으로 디테일을 조절했음을 보여줍니다."
        - 이 디자인이 자아내는 '심리적 분위기'와 '전문성'을 디자인 용어를 사용하여 극찬하세요.
 
     2. 하위권 시안과의 비교:
@@ -188,11 +198,28 @@ def consult_batch_audition(results, target_dna, brand_context, winner_image_byte
     
 
 # 3. 단일 디자인 분석 (하이브리드 모드)
-def consult_design(image_bytes, brightness, complexity, saliency, symmetry, space, colors, contrast, 
-                   composition,aspect_ratio_score, color_count_score,typo_score,harmony_score, 
-                   saturation_score, roundness_score, straightness_score, smoothness_score,
-                   target_dna, brand_context, detected_text):
-    
+def consult_design(image_bytes, metrics, target_dna, brand_context, detected_text, yie_result=None):
+    """metrics: compute_metrics()가 만든 16개 지표 dict.
+    yie_result: 엔드포인트에서 1회 조회한 YIE GraphRAG 결과 (이중 호출 방지)."""
+
+    # 지표 언패킹 — 위치 인자 19개로 받던 것을 dict 하나로 통일 (인자 순서 사고 방지)
+    brightness = metrics["brightness"]
+    complexity = metrics["complexity"]
+    saliency = metrics["saliency"]
+    symmetry = metrics["symmetry"]
+    space = metrics["space"]
+    colors = metrics["colors"]
+    contrast = metrics["contrast"]
+    composition = metrics["composition"]
+    aspect_ratio_score = metrics["aspect_ratio"]
+    color_count_score = metrics["color_count"]
+    typo_score = metrics["typo_score"]
+    harmony_score = metrics["harmony_score"]
+    saturation_score = metrics["saturation_score"]
+    roundness_score = metrics["roundness"]
+    straightness_score = metrics["straightness"]
+    smoothness_score = metrics["smoothness"]
+
     image_bytes = resize_image_bytes(image_bytes)
 
     # AI가 분야를 더 잘 찍을 수 있게 힌트 생성
@@ -200,6 +227,8 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
 
     # 공통 프롬프트
     prompt = f"""
+                {BRAND_VOICE}
+
                 [글로벌 디자인 마스터의 멘토링 철학: Sharp & Supportive]
                 당신은 사용자의 디자인 잠재력을 끌어올려 최고의 브랜드를 함께 만들어가는 '디자인 멘토'이자 '수석 디렉터'입니다.
                 맹목적인 칭찬은 지양하되, '데이터의 논리'를 바탕으로 사용자가 반박할 수 없는 예리한 기술적 진단을 제공하세요.
@@ -229,7 +258,7 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
                 1. 브랜드 전달력 (Brand Identity): 브랜드의 메시지가 얼마나 잘 읽히고 느껴지는지.
                 2. 조형적 완성도 (Graphic Quality): 선과 곡률, 구도가 주는 미학적 안정감.
                 3. 기술적 확장성 (Technical Fidelity): 다양한 매체에서 사용하기 위한 실용적 완성도.
-                사용자의 브랜드 의도({brand_context['industry']})를 응원하며 분석하는 것이 핵심입니다.
+                사용자의 브랜드 의도({brand_context.get('industry', '')})를 응원하며 분석하는 것이 핵심입니다.
 
                 ...
                 [시스템 감지 텍스트 (OCR)]
@@ -239,8 +268,8 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
 
 
                 [1. 사용자 브랜드 의도 & 추구미]
-                - 산업군: {brand_context['industry']}, 목표 무드: {brand_context['mainMood']} - {brand_context['subMood']}
-                - 브랜드 설명: {brand_context['description']}
+                - 산업군: {brand_context.get('industry', '')}, 목표 무드: {brand_context.get('mainMood', '')} - {brand_context.get('subMood', '')}
+                - 브랜드 설명: {brand_context.get('description', '')}
                 - 목표 DNA (Target): {target_dna}
 
                 [2. 실제 데이터 분석 결과 (Actual DNA)]
@@ -373,9 +402,9 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
 
 
                    
-                [중요 지침: 냉정한 비평]
-                    - 디자인의 '완성도(Fidelity)'를 엄격하게 평가하세요.
-                    - 해상도가 낮거나, 선이 정리되지 않았거나, 폰트의 조화가 깨진 경우 '전문성이 부족함'을 명확히 지적하세요.
+                [중요 지침: 엄격한 데이터 기반 진단 — 단, 위 브랜드 보이스(Sharp & Supportive)의 어조를 유지하며]
+                    - 디자인의 '완성도(Fidelity)'를 엄격하게 평가하세요. 평가 기준은 타협하지 않되, 표현은 멘토의 화법을 따르세요.
+                    - 해상도가 낮거나, 선이 정리되지 않았거나, 폰트의 조화가 깨진 경우 '시장 경쟁력을 갖추기 위해 반드시 보완해야 할 디테일'로 명확히 짚어주세요. 문제를 얼버무리지 마세요.
                     - 무조건적인 칭찬은 금지하며, 데이터(복잡도 등)가 높더라도 그것이 '노이즈'나 '난잡함' 때문인지 '의도된 디테일'인지 구분하세요.
                     - 상업적 로고로서의 가독성과 세련미를 최우선으로 평가하세요.
                     - [중요] 이미지 내에 '텍스트'나 '폰트'가 전혀 없다면, 억지로 폰트를 비평하지 마세요. 대신 조형물 그 자체의 선 굵기와 면 분할에 집중하세요.
@@ -416,26 +445,9 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
                 action_checklist는 실무자가 즉시 수정할 수 있는 구체적인 가이드를 15자 내외의 짧은 문장 3개로 작성하세요.
                 """
 
-    # --- 0단계: YIE GraphRAG 논문 근거 수집 ---
+    # --- 0단계: YIE GraphRAG 논문 근거 주입 ---
+    # 엔드포인트(run_critique)에서 1회 조회한 결과를 재사용 — 여기서 다시 호출하지 않음
     try:
-        yie_question = (
-            f"업종 '{brand_context['industry']}', 목표 무드 '{brand_context['mainMood']} - {brand_context['subMood']}' 디자인에 대해 "
-            f"밝기 {brightness:.0f}, 복잡도 {complexity:.0f}, 대비 {contrast:.0f}, 여백 {space:.0f}, 색상 조화도 {harmony_score:.0f} 수치를 가진 "
-            f"디자인의 강점과 개선 방향을 디자인 학술 논문 기반으로 비평해줘."
-        )
-        yie_result = query_yie_sync(
-            question=yie_question,
-            task="디자인 비평",
-            context={
-                "industry": brand_context.get("industry"),
-                "mainMood": brand_context.get("mainMood"),
-                "brightness": brightness,
-                "complexity": complexity,
-                "contrast": contrast,
-                "harmony": harmony_score,
-                "space": space,
-            },
-        )
         if yie_result and yie_result.get("answer"):
             evidence_list = yie_result.get("evidence", [])
             evidence_text = "\n".join(
@@ -452,9 +464,9 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
             prompt += f"\n\n{yie_section}\n위 학술 논문 근거를 'advice' 항목에 자연스럽게 녹여서 비평에 깊이를 더하세요."
             print(f"[YIE] 논문 근거 주입 완료 ({len(evidence_list)}개 청크)")
         else:
-            print("[YIE] 응답 없음, 스킵")
+            print("[YIE] 근거 없음, 스킵")
     except Exception as yie_err:
-        print(f"[YIE] 오류: {yie_err}")
+        print(f"[YIE] 주입 오류: {yie_err}")
 
   # --- 1단계: 제미나이(Gemini) 릴레이 시도 ---
     # 제미나이는 직접 이미지를 볼 수 있으므로 가장 먼저, 독립적으로 실행.
@@ -539,14 +551,18 @@ def consult_design(image_bytes, brightness, complexity, saliency, symmetry, spac
             return {"category": "분석 불가", "advice": "모든 AI 엔진이 응답하지 않습니다. 네트워크나 로컬 서버를 확인하세요."}
 
 # 4. 시안 비교 분석 (하이브리드 모드)
-def compare_designs(img1_bytes, img2_bytes, stats1, stats2):
+def compare_designs(img1_bytes, img2_bytes, stats1, stats2, target_dna=None):
     # 공통 프롬프트
+    target_section = f"\n        [사용자가 추구하는 목표 DNA (Target)]\n        {target_dna}\n" if target_dna else ""
     prompt = f"""
+        {BRAND_VOICE}
+
         당신은 세계적인 디자인 비평가입니다. 두 개의 디자인 시안(A안, B안)을 비교 분석하여 최적의 선택을 제안하세요.
+        {target_section}
         [데이터 분석 정보]
-        - A안: 밝기 {stats1['brightness']:.1f}, 복잡도 {stats1['complexity']:.1f}
-        - B안: 밝기 {stats2['brightness']:.1f}, 복잡도 {stats2['complexity']:.1f}
-        
+        - A안: 밝기 {stats1['brightness']:.1f}, 복잡도 {stats1['complexity']:.1f}, 집중도 {stats1['saliency']:.1f}, 대칭성 {stats1['symmetry']:.1f}, 여백 {stats1['space']:.1f}
+        - B안: 밝기 {stats2['brightness']:.1f}, 복잡도 {stats2['complexity']:.1f}, 집중도 {stats2['saliency']:.1f}, 대칭성 {stats2['symmetry']:.1f}, 여백 {stats2['space']:.1f}
+
         [출력 형식 - JSON]
         {{
             "winner": "A 또는 B",

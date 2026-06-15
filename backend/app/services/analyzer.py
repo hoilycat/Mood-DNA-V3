@@ -202,7 +202,7 @@ def extract_color_dna(image_bytes, k=10, remove_bg_internally=False):
     
     # 4. K-means 알고리즘 실행
     data = np.float32(pixels)
-    _, labels, centers = cv2.kmeans(data, k, None, (cv2.TERM_CRITERIA_EPS + 10, 10, 1.0), 10, cv2.KMEANS_RANDOM_CENTERS)
+    _, labels, centers = cv2.kmeans(data, k, None, (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0), 10, cv2.KMEANS_RANDOM_CENTERS)
     
     counts = np.bincount(labels.flatten())
     total = len(pixels)
@@ -279,7 +279,7 @@ def calculate_effective_color_count(image_bytes, threshold=0.01):
     if len(pixels) < 100: return 0
     
     data = np.float32(pixels)
-    _, labels, _ = cv2.kmeans(data, 12, None, (cv2.TERM_CRITERIA_EPS + 10, 10, 1.0), 10, cv2.KMEANS_RANDOM_CENTERS)
+    _, labels, _ = cv2.kmeans(data, 12, None, (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0), 10, cv2.KMEANS_RANDOM_CENTERS)
     counts = np.bincount(labels.flatten())
     total = len(pixels)
     return len([c for c in counts if c / total > threshold])
@@ -306,26 +306,13 @@ def calculate_color_harmony_score(image_bytes):
     hsv = cv2.cvtColor(img[:,:,:3], cv2.COLOR_BGR2HSV)
     h_pixels = hsv[:,:,0].flatten()
     if len(h_pixels) == 0: return 0.0
-    return max(0.0, 100 - (np.std(h_pixels) / 90 * 100))
-
-#채도
-def calculate_average_saturation(image_bytes):
-    """이미지의 평균 채도 추출 (0~100)"""
-    img, is_logo_mode = get_image_and_mode(image_bytes)
-    if img is None: return 0.0
-    
-    hsv = cv2.cvtColor(img[:,:,:3], cv2.COLOR_BGR2HSV)
-    s_channel = hsv[:, :, 1] # S(Saturation) 채널만 추출
-
-    if is_logo_mode:
-        mask = img[:, :, 3] > 0
-        pixels = s_channel[mask]
-    else:
-        pixels = s_channel.flatten()
-
-    # 0~255 범위를 0~100으로 정규화
-    return float((np.mean(pixels) / 255) * 100) if len(pixels) > 0 else 0.0
-
+    # Hue는 원형 값(0과 179가 같은 빨강)이라 일반 std를 쓰면
+    # 빨강 계열 단색 디자인이 '조화도 최악'으로 잘못 계산됨 → 원형 표준편차 사용
+    angles = h_pixels.astype(np.float64) * (2 * np.pi / 180.0)
+    R = np.hypot(np.mean(np.cos(angles)), np.mean(np.sin(angles)))
+    R = min(max(R, 1e-9), 1.0)
+    circ_std = np.sqrt(-2 * np.log(R)) * (180.0 / (2 * np.pi))  # OpenCV Hue(0~179) 단위로 환산
+    return float(max(0.0, 100 - (circ_std / 90 * 100)))
 
 def calculate_roundness(image_bytes):
     """디자인의 원형도/곡률 분석 (0~100)"""
