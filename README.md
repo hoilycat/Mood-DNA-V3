@@ -34,8 +34,6 @@
 - 데모 화면: [`demo/full-demo.html`](./demo/full-demo.html)
 - 스플래시 프레임 캡처용 화면: [`demo/splash-frame.html`](./demo/splash-frame.html)
 
-![Mood-DNA-V3 splash preview](./Mood-DNA-V3-splash-preview.gif)
-
 ---
 
 ## 🖋️ Introduction
