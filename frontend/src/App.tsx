@@ -419,7 +419,7 @@ function App() {
             ) : compResult ? (
               <CompareResult compResult={compResult} targets={targets} />
             ) : batchResult ? (
-              <BatchResult batchResult={batchResult} batchPreviews={batchPreviews} />
+              <BatchResult batchResult={batchResult} batchPreviews={batchPreviews} targets={targets} />
             ) : (
               <EmptyState targets={targets} />
             )}
