@@ -1,8 +1,10 @@
 from fastapi import FastAPI, UploadFile, File, Form, Depends, HTTPException
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from sqlalchemy.orm import Session
 from rembg import remove
+import asyncio
 import json
 from dotenv import load_dotenv
 
@@ -102,6 +104,24 @@ def compute_metrics(image_bytes: bytes, remove_bg: bool):
     return metrics, ocr_result["text_content"]
 
 
+def compute_compare_stats(image_bytes: bytes) -> dict:
+    """비교(A/B)용 5개 지표 + 색상 분석. 배경 제거 실패 시 원본 사용.
+    (동기 블로킹 — 스레드풀에서 실행)"""
+    analyze_bytes = image_bytes
+    try:
+        analyze_bytes = remove(image_bytes)
+    except Exception as e:
+        print(f"배경 제거 실패: {e}")
+    return {
+        "brightness": calculate_brightness(analyze_bytes),
+        "complexity": calculate_complexity(analyze_bytes),
+        "saliency": calculate_saliency(analyze_bytes),
+        "symmetry": calculate_symmetry(analyze_bytes),
+        "space": calculate_space_ratio(analyze_bytes),
+        "colors": extract_color_dna(analyze_bytes, remove_bg_internally=False),
+    }
+
+
 async def run_critique(image_bytes: bytes, metrics: dict, ocr_text: str,
                        target_dict: dict, context_dict: dict, db: Session):
     """YIE → AI 비평 → 레퍼런스 검색 → DB 저장. (느린 단계)"""
@@ -131,7 +151,9 @@ async def run_critique(image_bytes: bytes, metrics: dict, ocr_text: str,
         print(f"[YIE] 오류: {yie_err}")
 
     # 2. AI 컨설턴트 비평 (YIE 근거를 프롬프트에 주입)
-    ai_feedback = consult_design(
+    #    동기 블로킹(genai 호출)이라 스레드풀에서 실행해 이벤트 루프를 막지 않는다.
+    ai_feedback = await run_in_threadpool(
+        consult_design,
         image_bytes, metrics, target_dict, context_dict, ocr_text,
         yie_result=yie_result,
     )
@@ -180,7 +202,8 @@ async def analyze_metrics(
 ):
     """1단계: 시각 지표만 빠르게 반환 (AI 호출 없음)"""
     image_bytes = await file.read()
-    metrics, ocr_text = compute_metrics(image_bytes, remove_bg)
+    # compute_metrics는 cv2/rembg/easyocr 등 동기 블로킹 작업 → 스레드풀에서 실행
+    metrics, ocr_text = await run_in_threadpool(compute_metrics, image_bytes, remove_bg)
     return {**metrics, "ocr_text": ocr_text}
 
 
@@ -214,7 +237,7 @@ async def analyze_image(
     target_dict = parse_json_form(target_dna, "target_dna")
     context_dict = parse_json_form(brand_context, "brand_context")
 
-    metrics, ocr_text = compute_metrics(image_bytes, remove_bg)
+    metrics, ocr_text = await run_in_threadpool(compute_metrics, image_bytes, remove_bg)
     critique = await run_critique(image_bytes, metrics, ocr_text, target_dict, context_dict, db)
 
     return {**critique, **metrics}
@@ -268,41 +291,22 @@ async def compare_images(
     img1_bytes = await file1.read()
     img2_bytes = await file2.read()
 
-    # 1. 배경 제거 후 수치 분석 (로직 통일, /analyze와 동일하게 실패 시 원본 사용)
-    a_bytes, b_bytes = img1_bytes, img2_bytes
-    try:
-        a_bytes = remove(img1_bytes)
-        b_bytes = remove(img2_bytes)
-    except Exception as e:
-        print(f"배경 제거 실패: {e}")
-
     #텍스트 데이터 파싱
     target_dict = parse_json_form(target_dna, "target_dna")
     context_dict = parse_json_form(brand_context, "brand_context")
 
-    stats1 = {
-        "brightness": calculate_brightness(a_bytes),
-        "complexity": calculate_complexity(a_bytes),
-        "saliency": calculate_saliency(a_bytes),
-        "symmetry": calculate_symmetry(a_bytes),
-        "space": calculate_space_ratio(a_bytes),
-        "colors": extract_color_dna(a_bytes, remove_bg_internally=False)
-    }
-    stats2 = {
-        "brightness": calculate_brightness(b_bytes),
-        "complexity": calculate_complexity(b_bytes),
-        "saliency": calculate_saliency(b_bytes),
-        "symmetry": calculate_symmetry(b_bytes),
-        "space": calculate_space_ratio(b_bytes),
-        "colors": extract_color_dna(b_bytes, remove_bg_internally=False)
-    }
+    # 1. 배경 제거 + 수치 분석 (동기 블로킹) — 두 이미지를 스레드풀에서 동시에 처리
+    stats1, stats2 = await asyncio.gather(
+        run_in_threadpool(compute_compare_stats, img1_bytes),
+        run_in_threadpool(compute_compare_stats, img2_bytes),
+    )
 
     # 2. Target DNA 일치도 점수 (배치 오디션과 동일한 가중 거리 공식)
     score1 = dna_match_score(target_dict, stats1)
     score2 = dna_match_score(target_dict, stats2)
 
-    # 3. AI 비교 분석
-    comparison = compare_designs(img1_bytes, img2_bytes, stats1, stats2, target_dict)
+    # 3. AI 비교 분석 (동기 블로킹 → 스레드풀)
+    comparison = await run_in_threadpool(compare_designs, img1_bytes, img2_bytes, stats1, stats2, target_dict)
 
     return {
         "comparison": comparison,
@@ -331,7 +335,8 @@ async def analyze_batch(
         image_bytes = await file.read()
 
         # 2. 분석 — 단일 분석과 동일한 파이프라인으로 9개 지표 전부 산출
-        metrics, _ = compute_metrics(image_bytes, remove_bg)
+        #    동기 블로킹 → 스레드풀에서 실행 (파일 간 순차 처리로 메모리 급증 방지)
+        metrics, _ = await run_in_threadpool(compute_metrics, image_bytes, remove_bg)
 
         # 3. 점수 계산 — 9개 지표 가중 거리 기반 DNA 일치도
         score = dna_match_score(target_dict, metrics)
@@ -346,8 +351,8 @@ async def analyze_batch(
     # 4. 점수순 정렬
     sorted_results = sorted(batch_results, key=lambda x: x['score'], reverse=True)
 
-    # 5. AI에게 전체 리포트 요청 (오디션 심사평)
-    master_report = consult_batch_audition(sorted_results, target_dict, context_dict)
+    # 5. AI에게 전체 리포트 요청 (오디션 심사평 — 동기 블로킹 → 스레드풀)
+    master_report = await run_in_threadpool(consult_batch_audition, sorted_results, target_dict, context_dict)
 
     return {
         "ranking": sorted_results,
