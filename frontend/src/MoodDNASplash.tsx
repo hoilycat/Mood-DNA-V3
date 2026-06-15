@@ -16,6 +16,19 @@ const svgStyle = (anim: string): CSSProperties => ({
   position: "absolute", top: 0, left: 0, width: 200, height: 202, opacity: 0, animation: anim
 });
 
+/** 스플래시의 '완전체' 심볼 — 헤더 등 앱 전역에서 동일한 브랜드 마크로 재사용 */
+export const MoodDNAMark = ({ size = 32 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox={VB} aria-hidden="true">
+    <g transform={TR}>
+      <circle fill="#0d2540" cx="104.44759" cy="107.90867" r="94.335114" />
+      <path fill="#ffffff" d={L_UP} />
+      <path fill="#ffffff" d={L_DOWN} />
+      <path fill="#ffffff" d={R_LINE} />
+      <ellipse fill="#ffffff" cx={EYE_CX} cy={EYE_CY} rx="9.4417152" ry="9.7564392" />
+    </g>
+  </svg>
+);
+
 export default function MoodDNASplash({ onComplete }: MoodDNASplashProps) {
   useEffect(() => {
     const t = setTimeout(() => onComplete?.(), 3200);
