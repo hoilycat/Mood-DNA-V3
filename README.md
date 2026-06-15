@@ -27,6 +27,8 @@
 
 ## 🎬 Demo
 
+![Mood-DNA-V3 demo preview](./Mood-DNA-V3-demo-full-preview.gif)
+
 - 시연 영상: [`Mood-DNA-V3-demo-full.mp4`](./Mood-DNA-V3-demo-full.mp4)
 - 데모 화면: [`demo/full-demo.html`](./demo/full-demo.html)
 - 스플래시 프레임 캡처용 화면: [`demo/splash-frame.html`](./demo/splash-frame.html)
