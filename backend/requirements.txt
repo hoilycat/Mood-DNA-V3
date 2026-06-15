@@ -1,1 +1,21 @@
+# Web server
+fastapi
+uvicorn
+python-multipart
+pydantic
+python-dotenv
+sqlalchemy
 httpx
+requests
+
+# AI & image processing
+google-genai
+opencv-contrib-python
+numpy
+rembg
+easyocr
+
+# Runtime backends for rembg/easyocr
+torch
+torchvision
+onnxruntime

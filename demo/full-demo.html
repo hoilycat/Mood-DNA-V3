@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1280, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #07192e;
+      --panel: #0d2238;
+      --panel-2: #102a43;
+      --line: #1d3d5a;
+      --muted: #7d93a7;
+      --text: #e7eef6;
+      --cream: #e8d5b0;
+      --teal: #2abfaa;
+      --teal-2: #75d8cb;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 1280px;
+      height: 720px;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(42, 191, 170, .08) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(42, 191, 170, .05) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: .22;
+      animation: gridDrift 18s linear infinite;
+    }
+
+    .splash {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background: var(--bg);
+      animation: splashExit 1s ease forwards 3.25s;
+    }
+
+    .logo {
+      position: relative;
+      width: 200px;
+      height: 202px;
+    }
+
+    .layer {
+      position: absolute;
+      inset: 0;
+      width: 200px;
+      height: 202px;
+      opacity: 0;
+      transform-origin: 50% 50%;
+    }
+
+    .fish-base { animation: fadeIn .5s ease forwards .2s; }
+    .eye-in { animation: popIn .35s cubic-bezier(.34,1.56,.64,1) forwards .65s; }
+    .fish-out { animation: squishOut .4s cubic-bezier(.4,0,1,.6) forwards 1.2s; }
+    .eye-out { animation: fadeOut .35s ease forwards 1.2s; opacity: 1; }
+    .full-mark { animation: squishIn .7s cubic-bezier(.34,1.8,.64,1) forwards 1.55s, spin 8s cubic-bezier(.4,0,.6,1) 2.25s infinite; }
+
+    .splash-title {
+      font-family: "Courier New", monospace;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--cream);
+      opacity: 0;
+      animation: slideUp .5s ease forwards 2s;
+    }
+
+    .splash-title span { color: var(--teal); font-size: 34px; font-weight: 400; }
+    .splash-sub {
+      font-size: 11px;
+      color: #3a6a90;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: slideUp .4s ease forwards 2.2s;
+    }
+
+    .load {
+      width: 140px;
+      height: 2px;
+      overflow: hidden;
+      border-radius: 2px;
+      background: #1a3a55;
+      opacity: 0;
+      animation: slideUp .4s ease forwards 2.3s;
+    }
+
+    .load div {
+      height: 100%;
+      width: 0;
+      border-radius: 2px;
+      background: var(--teal);
+      animation: loadBar 1.2s ease forwards 2.4s;
+    }
+
+    .app {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 292px 1fr 304px;
+      background: var(--bg);
+      opacity: 0;
+      transform: scale(.985);
+      animation: appIn .7s ease forwards 3.35s;
+    }
+
+    .top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 25, 46, .94);
+      z-index: 3;
+    }
+
+    .brand {
+      position: absolute;
+      left: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .brand svg { width: 34px; height: 34px; }
+    .brand strong { display: block; font-size: 16px; }
+    .brand small { display: block; margin-top: 2px; font-size: 9px; color: var(--cream); letter-spacing: .28em; }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #091b30;
+    }
+
+    .tab {
+      width: 76px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      color: #a8b6c6;
+      font-size: 13px;
+      font-weight: 700;
+      animation: tabDance 12s steps(1, end) infinite;
+    }
+
+    .tab:nth-child(1) { background: var(--teal-2); color: #061524; }
+    .tab:nth-child(2), .tab:nth-child(3), .tab:nth-child(4) { background: transparent; }
+
+    .left, .right, .center {
+      padding-top: 56px;
+      min-height: 720px;
+    }
+
+    .left {
+      border-right: 1px solid var(--line);
+      background: rgba(8, 28, 49, .98);
+      transform: translateX(-24px);
+      opacity: 0;
+      animation: panelIn .55s ease forwards 3.65s;
+    }
+
+    .right {
+      border-left: 1px solid var(--line);
+      background: rgba(8, 28, 49, .9);
+      transform: translateX(24px);
+      opacity: 0;
+      animation: panelIn .55s ease forwards 3.75s;
+    }
+
+    .center {
+      padding: 70px 12px 16px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(14px);
+      animation: centerIn .6s ease forwards 3.85s;
+    }
+
+    .section-title {
+      color: #83a0b8;
+      font-size: 11px;
+      letter-spacing: .16em;
+      font-weight: 800;
+      padding: 24px 18px 12px;
+    }
+
+    .choice {
+      width: calc(100% - 36px);
+      margin: 4px 18px;
+      padding: 11px 10px;
+      border-radius: 8px;
+      color: #bec9d5;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .choice.active {
+      background: #15334d;
+      color: var(--teal-2);
+      box-shadow: inset 3px 0 0 var(--teal);
+    }
+
+    .mini-card {
+      margin: 14px 18px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 94px 144px;
+      gap: 10px;
+    }
+
+    .upload, .check, .analyze {
+      height: 74px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+    }
+
+    .upload {
+      border-style: dashed;
+      animation: uploadPulse 12s ease infinite;
+    }
+
+    .upload-icon {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #123654;
+      color: var(--teal-2);
+      font-size: 24px;
+    }
+
+    .upload strong { display: block; font-size: 15px; }
+    .upload span { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .check { justify-content: center; color: #ccd8e3; font-size: 13px; font-weight: 700; }
+
+    .analyze {
+      justify-content: center;
+      background: #4b8490;
+      color: #061524;
+      font-weight: 900;
+      letter-spacing: .04em;
+      animation: analyzeGlow 12s ease infinite;
+    }
+
+    .main-grid {
+      margin-top: 32px;
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(13, 34, 56, .9);
+      padding: 20px;
+      min-height: 240px;
+    }
+
+    h2, h3, p { margin: 0; }
+    h2 { font-size: 22px; margin-bottom: 4px; }
+    h3 { font-size: 15px; color: #b8cad8; margin-bottom: 12px; letter-spacing: .08em; }
+    p { color: #9eb0bf; font-size: 13px; line-height: 1.55; }
+
+    .radar-wrap {
+      height: 300px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .radar {
+      width: 260px;
+      height: 260px;
+      animation: chartReveal 12s ease infinite;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      padding: 12px;
+      border: 1px solid #244660;
+      border-radius: 8px;
+      background: #0b1f34;
+    }
+
+    .metric span { color: var(--muted); font-size: 11px; }
+    .metric strong { display: block; margin-top: 4px; font-size: 22px; color: var(--teal-2); }
+
+    .preview {
+      height: 158px;
+      border-radius: 8px;
+      border: 1px solid #244660;
+      background: linear-gradient(135deg, #2abfaa, #0d2540);
+      position: relative;
+      overflow: hidden;
+      animation: previewIn 12s ease infinite;
+    }
+
+    .preview::after {
+      content: "Mood/DNA";
+      position: absolute;
+      left: 22px;
+      bottom: 18px;
+      font: 700 26px "Courier New", monospace;
+      color: white;
+    }
+
+    .critique {
+      margin: 14px 18px;
+      padding: 18px;
+      min-height: 560px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0a1d31;
+      animation: critiqueFill 12s ease infinite;
+    }
+
+    .score {
+      display: grid;
+      place-items: center;
+      width: 92px;
+      height: 92px;
+      border-radius: 999px;
+      margin: 34px auto 22px;
+      color: var(--teal-2);
+      border: 2px solid var(--teal);
+      font-size: 30px;
+      font-weight: 900;
+      box-shadow: 0 0 28px rgba(42, 191, 170, .18);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: #14334c;
+      color: var(--teal-2);
+      font-size: 12px;
+      font-weight: 800;
+      margin: 16px 6px 0 0;
+    }
+
+    .mode-panel {
+      position: absolute;
+      inset: 126px 322px 26px 314px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(13, 34, 56, .98);
+      opacity: 0;
+      transform: translateY(18px);
+      padding: 26px;
+      pointer-events: none;
+    }
+
+    .mode-ab { animation: modeAB 12s ease infinite; }
+    .mode-batch { animation: modeBatch 12s ease infinite; }
+    .mode-history { animation: modeHistory 12s ease infinite; }
+
+    .compare-grid, .batch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .compare-box, .batch-box {
+      min-height: 220px;
+      border: 1px solid #244660;
+      border-radius: 8px;
+      background: #0b1f34;
+      padding: 16px;
+    }
+
+    .rank {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #244660;
+      font-size: 14px;
+    }
+
+    .rank strong { color: var(--teal-2); }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(.1); } to { opacity: 1; transform: scale(1); } }
+    @keyframes squishOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(.85); } }
+    @keyframes squishIn { 0% { opacity: 0; transform: scale(.85); } 70% { opacity: 1; transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes spin { 0% { transform: rotate(0); } 30% { transform: rotate(100deg); } 70% { transform: rotate(260deg); } 100% { transform: rotate(360deg); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes loadBar { 0% { width: 0; } 60% { width: 75%; } 85% { width: 90%; } 100% { width: 100%; } }
+    @keyframes splashExit { to { opacity: 0; visibility: hidden; } }
+    @keyframes appIn { to { opacity: 1; transform: scale(1); } }
+    @keyframes panelIn { to { opacity: 1; transform: translateX(0); } }
+    @keyframes centerIn { to { opacity: 1; transform: translateY(0); } }
+    @keyframes gridDrift { to { background-position: 96px 48px; } }
+    @keyframes uploadPulse { 0%, 37% { border-color: var(--line); } 43%, 100% { border-color: var(--teal); box-shadow: 0 0 0 1px rgba(42,191,170,.2); } }
+    @keyframes analyzeGlow { 0%, 48% { filter: none; } 52%, 64% { filter: brightness(1.22); box-shadow: 0 0 24px rgba(42,191,170,.35); } 70%, 100% { filter: none; } }
+    @keyframes chartReveal { 0%, 54% { opacity: .35; transform: scale(.96); } 63%, 100% { opacity: 1; transform: scale(1); } }
+    @keyframes previewIn { 0%, 42% { opacity: .18; transform: scale(.98); } 50%, 100% { opacity: 1; transform: scale(1); } }
+    @keyframes critiqueFill { 0%, 60% { opacity: .65; } 68%, 100% { opacity: 1; } }
+    @keyframes modeAB { 0%, 70% { opacity: 0; } 73%, 80% { opacity: 1; transform: translateY(0); } 83%, 100% { opacity: 0; } }
+    @keyframes modeBatch { 0%, 81% { opacity: 0; } 84%, 90% { opacity: 1; transform: translateY(0); } 93%, 100% { opacity: 0; } }
+    @keyframes modeHistory { 0%, 91% { opacity: 0; } 94%, 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes tabDance {
+      0%, 72% {}
+      73%, 82% {}
+    }
+  </style>
+</head>
+<body>
+  <div class="splash">
+    <div class="logo">
+      <svg class="layer fish-base" viewBox="0 0 209.64174 212.09167"><g transform="translate(-0.35826296)"><circle fill="#0d2540" cx="104.44759" cy="107.90867" r="94.335114"/><path fill="#ffffff" d="m 142.3569,38.624422 a 5.8473106,5.8473106 0 0 0 -6.52231,5.085869 c 0,0 -2.18851,13.512755 -10.11994,20.149272 -5.23353,4.379088 -15.22613,13.016605 -24.22577,20.80933 -4.499817,3.896338 -8.739665,7.57355 -11.983466,10.378735 -3.243823,2.80525 -5.820399,4.987602 -5.862319,5.021202 -1.731092,1.38479 -2.500642,2.72223 -3.351756,4.43879 -0.8511,1.7165 -1.543661,3.76011 -1.876465,6.10817 -0.665583,4.69612 0.430027,10.82193 4.982337,15.80112 4.141833,4.5301 12.831779,11.7573 21.391669,18.84225 8.55987,7.0849 17.29735,14.22909 18.15637,15.03756 1.208,1.13701 4.96223,5.32341 8.04936,8.90349 3.08715,3.58001 5.73291,6.75525 5.73291,6.75525 a 5.8473106,5.8473106 0 0 0 8.24349,0.72473 5.8473106,5.8473106 0 0 0 0.73764,-8.23056 c 0,0 -2.70743,-3.22606 -5.86232,-6.88465 -3.15489,-3.65867 -6.53167,-7.56334 -8.89054,-9.78353 -2.70787,-2.54849 -10.22518,-8.50414 -18.71285,-15.52933 -8.48766,-7.02511 -17.641733,-14.91591 -20.214014,-17.72931 -2.161762,-2.36451 -2.310334,-4.31091 -2.031763,-6.2764 0.139285,-0.98282 0.460506,-1.91209 0.776481,-2.54942 0.315986,-0.63742 0.863173,-1.03736 0.18115,-0.49164 1.007145,-0.80571 2.944869,-2.50485 6.198782,-5.31878 3.253934,-2.81393 7.487434,-6.48571 11.983474,-10.378788 8.99209,-7.786174 19.03595,-16.456553 24.08342,-20.679875 12.63052,-10.568422 14.22223,-27.693986 14.22223,-27.693986 a 5.8473106,5.8473106 0 0 0 -5.08582,-6.509366 z"/></g></svg>
+      <svg class="layer eye-in" viewBox="0 0 209.64174 212.09167"><ellipse fill="#ffffff" cx="116.15209" cy="113.1982" rx="9.4417152" ry="9.7564392" transform="translate(-0.35826296)"/></svg>
+      <svg class="layer full-mark" viewBox="0 0 209.64174 212.09167"><g transform="translate(-0.35826296)"><circle fill="#0d2540" cx="104.44759" cy="107.90867" r="94.335114"/><path fill="#ffffff" d="m 71.100421,40.323618 a 5.8473106,5.8473106 0 0 0 -5.639326,6.043369 c 0,0 0.680408,14.330583 12.576364,29.429234 4.268272,5.417556 8.633822,9.780609 12.038789,12.867469 l 9.001701,-7.625296 C 95.995098,78.340812 91.588252,74.09623 87.227474,68.561322 77.302531,55.96433 77.143786,45.966323 77.143786,45.966323 a 5.8473106,5.8473106 0 0 0 -6.043365,-5.642705 z"/><path fill="#ffffff" d="m 98.851266,145.84934 -8.47099,-7.37529 c -3.051717,2.65517 -6.62431,6.07252 -10.131613,10.14193 -11.895956,13.80229 -12.576352,26.90239 -12.576352,26.90239 a 5.8473106,5.3452558 0 0 0 5.639326,5.52635 5.8473106,5.3452558 0 0 0 6.043364,-5.16 c 0,0 0.158759,-9.13818 10.083684,-20.65357 3.310325,-3.84088 6.648649,-7.00287 9.412581,-9.38181 z"/><path fill="#ffffff" d="m 142.3569,38.624422 a 5.8473106,5.8473106 0 0 0 -6.52231,5.085869 c 0,0 -2.18851,13.512755 -10.11994,20.149272 -5.23353,4.379088 -15.22613,13.016605 -24.22577,20.80933 -4.499817,3.896338 -8.739665,7.57355 -11.983466,10.378735 -3.243823,2.80525 -5.820399,4.987602 -5.862319,5.021202 -1.731092,1.38479 -2.500642,2.72223 -3.351756,4.43879 -0.8511,1.7165 -1.543661,3.76011 -1.876465,6.10817 -0.665583,4.69612 0.430027,10.82193 4.982337,15.80112 4.141833,4.5301 12.831779,11.7573 21.391669,18.84225 8.55987,7.0849 17.29735,14.22909 18.15637,15.03756 1.208,1.13701 4.96223,5.32341 8.04936,8.90349 3.08715,3.58001 5.73291,6.75525 5.73291,6.75525 a 5.8473106,5.8473106 0 0 0 8.24349,0.72473 5.8473106,5.8473106 0 0 0 0.73764,-8.23056 c 0,0 -2.70743,-3.22606 -5.86232,-6.88465 -3.15489,-3.65867 -6.53167,-7.56334 -8.89054,-9.78353 -2.70787,-2.54849 -10.22518,-8.50414 -18.71285,-15.52933 -8.48766,-7.02511 -17.641733,-14.91591 -20.214014,-17.72931 -2.161762,-2.36451 -2.310334,-4.31091 -2.031763,-6.2764 0.139285,-0.98282 0.460506,-1.91209 0.776481,-2.54942 0.315986,-0.63742 0.863173,-1.03736 0.18115,-0.49164 1.007145,-0.80571 2.944869,-2.50485 6.198782,-5.31878 3.253934,-2.81393 7.487434,-6.48571 11.983474,-10.378788 8.99209,-7.786174 19.03595,-16.456553 24.08342,-20.679875 12.63052,-10.568422 14.22223,-27.693986 14.22223,-27.693986 a 5.8473106,5.8473106 0 0 0 -5.08582,-6.509366 z"/><ellipse fill="#ffffff" cx="116.15209" cy="113.1982" rx="9.4417152" ry="9.7564392"/></g></svg>
+    </div>
+    <div class="splash-title">Mood<span>/</span>DNA</div>
+    <div class="splash-sub">Design Intelligence for Designers</div>
+    <div class="load"><div></div></div>
+  </div>
+
+  <main class="app">
+    <header class="top">
+      <div class="brand"><svg viewBox="0 0 209.64174 212.09167"><g transform="translate(-0.35826296)"><circle fill="#0d2540" cx="104.44759" cy="107.90867" r="94.335114"/><path fill="#fff" d="m 71.100421,40.323618 a 5.8473106,5.8473106 0 0 0 -5.639326,6.043369 c 0,0 0.680408,14.330583 12.576364,29.429234 4.268272,5.417556 8.633822,9.780609 12.038789,12.867469 l 9.001701,-7.625296 C 95.995098,78.340812 91.588252,74.09623 87.227474,68.561322 77.302531,55.96433 77.143786,45.966323 77.143786,45.966323 a 5.8473106,5.8473106 0 0 0 -6.043365,-5.642705 z"/><path fill="#fff" d="m 98.851266,145.84934 -8.47099,-7.37529 c -3.051717,2.65517 -6.62431,6.07252 -10.131613,10.14193 -11.895956,13.80229 -12.576352,26.90239 -12.576352,26.90239 a 5.8473106,5.3452558 0 0 0 5.639326,5.52635 5.8473106,5.3452558 0 0 0 6.043364,-5.16 c 0,0 0.158759,-9.13818 10.083684,-20.65357 3.310325,-3.84088 6.648649,-7.00287 9.412581,-9.38181 z"/><path fill="#fff" d="m 142.3569,38.624422 a 5.8473106,5.8473106 0 0 0 -6.52231,5.085869 c 0,0 -2.18851,13.512755 -10.11994,20.149272 -5.23353,4.379088 -15.22613,13.016605 -24.22577,20.80933 -4.499817,3.896338 -8.739665,7.57355 -11.983466,10.378735 -3.243823,2.80525 -5.820399,4.987602 -5.862319,5.021202 -1.731092,1.38479 -2.500642,2.72223 -3.351756,4.43879 -0.8511,1.7165 -1.543661,3.76011 -1.876465,6.10817 -0.665583,4.69612 0.430027,10.82193 4.982337,15.80112 4.141833,4.5301 12.831779,11.7573 21.391669,18.84225 8.55987,7.0849 17.29735,14.22909 18.15637,15.03756 1.208,1.13701 4.96223,5.32341 8.04936,8.90349 3.08715,3.58001 5.73291,6.75525 5.73291,6.75525 a 5.8473106,5.8473106 0 0 0 8.24349,0.72473 5.8473106,5.8473106 0 0 0 0.73764,-8.23056 c 0,0 -2.70743,-3.22606 -5.86232,-6.88465 -3.15489,-3.65867 -6.53167,-7.56334 -8.89054,-9.78353 -2.70787,-2.54849 -10.22518,-8.50414 -18.71285,-15.52933 -8.48766,-7.02511 -17.641733,-14.91591 -20.214014,-17.72931 -2.161762,-2.36451 -2.310334,-4.31091 -2.031763,-6.2764 0.139285,-0.98282 0.460506,-1.91209 0.776481,-2.54942 0.315986,-0.63742 0.863173,-1.03736 0.18115,-0.49164 1.007145,-0.80571 2.944869,-2.50485 6.198782,-5.31878 3.253934,-2.81393 7.487434,-6.48571 11.983474,-10.378788 8.99209,-7.786174 19.03595,-16.456553 24.08342,-20.679875 12.63052,-10.568422 14.22223,-27.693986 14.22223,-27.693986 a 5.8473106,5.8473106 0 0 0 -5.08582,-6.509366 z"/><ellipse fill="#fff" cx="116.15209" cy="113.1982" rx="9.4417152" ry="9.7564392"/></g></svg><div><strong>Mood/DNA</strong><small>DESIGN INTELLIGENCE</small></div></div>
+      <nav class="tabs"><div class="tab">Single</div><div class="tab">A/B Test</div><div class="tab">Batch</div><div class="tab">History</div></nav>
+    </header>
+    <aside class="left">
+      <div class="section-title">BRAND SETTINGS</div>
+      <div class="section-title">BRAND ENERGY</div>
+      <div class="choice">Natural & Soft</div>
+      <div class="choice active">Rational & Stable</div>
+      <div class="choice">Artistic & Luxury</div>
+      <div class="choice">Commercial & Retail</div>
+      <div class="section-title">TASTE / CATEGORY</div>
+      <div class="choice active">Finance / Fintech</div>
+      <div class="choice">Luxury / High-end</div>
+      <div class="choice">Minimal Casual</div>
+      <div class="mini-card"><h3>TARGET DNA</h3><p>밝기 55 · 복잡도 35 · 주목도 70 · 대칭성 82 · 여백 68</p></div>
+    </aside>
+    <section class="center">
+      <div class="toolbar">
+        <div class="upload"><div class="upload-icon">↥</div><div><strong>Upload design</strong><span>mood-test.png 선택됨</span></div></div>
+        <div class="check">□ 배경 제거</div>
+        <div class="analyze">✦ Analyze</div>
+      </div>
+      <div class="main-grid">
+        <div class="card">
+          <h2>Target Mood DNA</h2>
+          <p>실제 백엔드 지표 분석 결과를 DNA 차트로 시각화합니다.</p>
+          <div class="radar-wrap">
+            <svg class="radar" viewBox="0 0 260 260">
+              <g transform="translate(130 130)" fill="none" stroke="#254960">
+                <polygon points="0,-104 99,-32 61,84 -61,84 -99,-32"/>
+                <polygon points="0,-78 74,-24 46,63 -46,63 -74,-24"/>
+                <polygon points="0,-52 49,-16 31,42 -31,42 -49,-16"/>
+                <line x1="0" y1="0" x2="0" y2="-112"/><line x1="0" y1="0" x2="106" y2="-34"/><line x1="0" y1="0" x2="66" y2="91"/><line x1="0" y1="0" x2="-66" y2="91"/><line x1="0" y1="0" x2="-106" y2="-34"/>
+                <polygon points="0,-60 99,-32 0,100 -61,84 -99,-32" fill="rgba(42,191,170,.28)" stroke="#75d8cb" stroke-width="2"/>
+              </g>
+              <text x="130" y="18" fill="#b9c9d9" font-size="12" text-anchor="middle">밝기</text>
+              <text x="235" y="96" fill="#b9c9d9" font-size="12" text-anchor="middle">복잡도</text>
+              <text x="194" y="236" fill="#b9c9d9" font-size="12" text-anchor="middle">주목도</text>
+              <text x="66" y="236" fill="#b9c9d9" font-size="12" text-anchor="middle">대칭성</text>
+              <text x="22" y="96" fill="#b9c9d9" font-size="12" text-anchor="middle">여백</text>
+            </svg>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Analysis Result</h2>
+          <p>샘플 이미지 업로드 후 `/analyze-metrics`가 반환한 수치입니다.</p>
+          <div class="preview"></div>
+          <div class="metrics">
+            <div class="metric"><span>Brightness</span><strong>144</strong></div>
+            <div class="metric"><span>Saliency</span><strong>100</strong></div>
+            <div class="metric"><span>Symmetry</span><strong>100</strong></div>
+            <div class="metric"><span>Harmony</span><strong>100</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <aside class="right">
+      <div class="section-title">AI CRITIQUE</div>
+      <div class="critique">
+        <div class="score">92</div>
+        <h2>Rational & Stable</h2>
+        <p>선명한 민트 계열의 단일 색상과 높은 대칭성은 안정적인 브랜드 인상을 만듭니다. 낮은 복잡도는 메시지 전달을 빠르게 만들고, 높은 여백 비율은 디지털 제품에 적합한 정돈감을 제공합니다.</p>
+        <span class="pill">Clean System</span><span class="pill">Fintech Mood</span><span class="pill">High Clarity</span>
+      </div>
+    </aside>
+    <section class="mode-panel mode-ab">
+      <h2>A/B Test</h2><p>두 디자인의 DNA를 비교하여 브랜드 목표와 더 가까운 시안을 선택합니다.</p>
+      <div class="compare-grid"><div class="compare-box"><h3>Design A</h3><div class="score">92</div></div><div class="compare-box"><h3>Design B</h3><div class="score">78</div></div></div>
+    </section>
+    <section class="mode-panel mode-batch">
+      <h2>Batch Audition</h2><p>여러 시안을 한 번에 분석하고 가장 적합한 후보를 랭킹으로 정리합니다.</p>
+      <div class="batch-grid"><div class="batch-box"><div class="rank">01 mood-test.png <strong>92</strong></div><div class="rank">02 concept-b.png <strong>84</strong></div><div class="rank">03 draft-c.png <strong>76</strong></div></div><div class="batch-box"><h3>Master Report</h3><p>1위 시안은 낮은 노이즈와 높은 조화도로 목표 무드에 가장 가깝습니다.</p></div></div>
+    </section>
+    <section class="mode-panel mode-history">
+      <h2>History</h2><p>분석 기록을 다시 열어 브랜드 방향성을 축적합니다.</p>
+      <div class="rank">2026.06.15 · Fintech Mood DNA <strong>92</strong></div>
+      <div class="rank">2026.06.15 · Batch Audition <strong>3 files</strong></div>
+    </section>
+  </main>
+</body>
+</html>
