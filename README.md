@@ -185,7 +185,7 @@ flowchart LR
 - [x] YIE GraphRAG 엔진 구축 (Neo4j, 1,374 chunks)
 - [x] Mood-DNA → YIE `/rag/query` HTTP 연동
 - [x] 분석 결과 화면에 논문 근거 카드 표시
-- [ ] UI 리디자인 (v3 전용)
+- [x] UI 리디자인 (v3 전용)
 - [ ] Target Insight 기반 업종별 특화 조언 모듈 고도화
 - [ ] 디자인 히스토리 스마트 아카이빙 기능
 
